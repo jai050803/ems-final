@@ -1,7 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, simpledialog
 from PIL import Image, ImageTk, ImageDraw
 from correct import EmployeeManagementSystem
+from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class SidebarIcon(ttk.Frame):
@@ -107,6 +110,11 @@ class MainWindow(tk.Tk):
         self.create_header_frame()
         self.create_main_feature_frame()
         self.create_sliders()
+        
+        self.video_frame = ttk.Frame(self.content_frame)
+        self.video_frame.pack(expand=True, fill="both")
+        
+        
 
     def create_header_frame(self):
         # Create a header frame with a specific height and full width relative to the content_frame
@@ -124,38 +132,67 @@ class MainWindow(tk.Tk):
         header_label.pack(pady=30)
     
     def create_main_feature_frame(self):
-        # This is the "big frame" below the header
-        main_feature_frame = ttk.Frame(self.content_frame, height=200)  # Height is adjustable
+        main_feature_frame = ttk.Frame(self.content_frame, height=300)
         main_feature_frame.pack(side="top", fill="x", padx=10, pady=(10, 0))
-        main_feature_frame.pack_propagate(False)  # This prevents the frame from shrinking to fit its contents
+        main_feature_frame.pack_propagate(False)
 
-        # Example content in main_feature_frame (can be replaced with actual content)
-        content_label = ttk.Label(main_feature_frame, text="Main Content Area", background="lightgray")
-        content_label.pack(expand=True, fill="both")
+        # Task List Frame
+        self.task_frame = ttk.Frame(main_feature_frame)
+        self.task_frame.pack(side="left", fill="both", expand=True)
+
+        self.task_label = ttk.Label(self.task_frame, text="Tasks")
+        self.task_label.pack()
+
+        self.task_listbox = tk.Listbox(self.task_frame)
+        self.task_listbox.pack(expand=True, fill="both")
+
+        self.add_task_button = ttk.Button(self.task_frame, text="Add Task", command=self.add_task)
+        self.add_task_button.pack()
+
+        # Chart Frame
+        self.chart_frame = ttk.Frame(main_feature_frame)
+        self.chart_frame.pack(side="right", fill="both", expand=True)
+
+        self.figure, self.ax = plt.subplots(figsize=(3, 2), dpi=100)
+        self.chart = FigureCanvasTkAgg(self.figure, self.chart_frame)
+        self.chart.get_tk_widget().pack(fill="both", expand=True)
+
+        self.update_chart(0)
+
+    def add_task(self):
+        task = simpledialog.askstring("Task", "Describe the task:")
+        if task:
+            self.task_listbox.insert(tk.END, task)
+            self.task_listbox.itemconfig(tk.END, {'bg':'lightgray'})
+
+    def update_chart(self, progress):
+        self.ax.clear()
+        self.ax.barh(["Task Progress"], [progress], color='skyblue')
+        self.ax.set_xlim(0, 100)
+        self.chart.draw()
+
 
     def create_sliders(self):
-        # The container for sliders
+    # The container for sliders
         sliders_frame = ttk.Frame(self.content_frame)
         sliders_frame.pack(side="top", fill="x", padx=10, pady=10)
 
-        # Assuming the image paths are correctly specified and images exist
         images_info = [
-            ("Data Analysis", "./icons/data_analysis.png"),
-            ("Data Visualization", "./icons/data_visualization.png"),
+            ("Data Analysis", "./icons/analytics.png"),
+            ("Data Visualization", "./icons/visualization.png"),
             ("Machine Learning", "./icons/settings.png"),
         ]
 
         for text, image_path in images_info:
-            img = Image.open(image_path).resize((50, 50), Image.ANTIALIAS)
+            img = Image.open(image_path).resize((50, 50), Image.Resampling.LANCZOS)
             photo = ImageTk.PhotoImage(img)
             button = ttk.Button(sliders_frame, text=text, image=photo, compound="top", style="Slider.TButton")
             button.image = photo  # Keep a reference
-            button.pack(side="left", expand=True, fill="both", padx=5)
+            button.pack(side="left", expand=True, fill="both", padx=5, pady=5)
 
         # Style for the sliders
-        slider_style = ttk.Style()
-        slider_style.configure("Slider.TButton", background="orange", foreground="white")
-
+        button = tk.Button(sliders_frame, text=text, image=photo, compound="top", bg="#D35400", fg="white", font=("Arial", 10))
+        button.config(height=100, width=200)
 if __name__ == "__main__":
     app = MainWindow()
     app.mainloop()
