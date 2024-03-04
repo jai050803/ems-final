@@ -119,10 +119,10 @@ root.geometry('925x550+300+200')
 root.configure(bg="#fff")
 root.resizable(False, False)
 
-image_icon = PhotoImage(file="logo.png")
+image_icon = PhotoImage(file="./files/images/logo.png")
 root.iconphoto(False,image_icon)
 
-img = PhotoImage(file='login.png')
+img = PhotoImage(file='./files/images/login.png')
 Label(root,image=img,bg='white').place(x=45,y=105)
 
 frame = Frame(root,width=350,height=450,bg="white")
