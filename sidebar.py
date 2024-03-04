@@ -103,6 +103,58 @@ class MainWindow(tk.Tk):
 
         self.content_frame = ttk.Frame(self)
         self.content_frame.pack(side="right", expand=True, fill="both")
+        
+        self.create_header_frame()
+        self.create_main_feature_frame()
+        self.create_sliders()
+
+    def create_header_frame(self):
+        # Create a header frame with a specific height and full width relative to the content_frame
+        header_frame = ttk.Frame(self.content_frame, height=100, style="Header.TFrame")
+        header_frame.pack(side="top", fill="x")
+        header_frame.pack_propagate(False)  # Prevents the frame from shrinking to fit its contents
+
+        # Style configuration for the header
+        style = ttk.Style()
+        style.configure("Header.TFrame", background="#2c3e50")  # Dark shade of blue
+        style.configure("Header.TLabel", background="#2c3e50", foreground="#ecf0f1", font=("Arial", 24, "bold"))
+
+        # Adding a label to the header frame
+        header_label = ttk.Label(header_frame, text="EMS - A Business Intelligence Tool", style="Header.TLabel")
+        header_label.pack(pady=30)
+    
+    def create_main_feature_frame(self):
+        # This is the "big frame" below the header
+        main_feature_frame = ttk.Frame(self.content_frame, height=200)  # Height is adjustable
+        main_feature_frame.pack(side="top", fill="x", padx=10, pady=(10, 0))
+        main_feature_frame.pack_propagate(False)  # This prevents the frame from shrinking to fit its contents
+
+        # Example content in main_feature_frame (can be replaced with actual content)
+        content_label = ttk.Label(main_feature_frame, text="Main Content Area", background="lightgray")
+        content_label.pack(expand=True, fill="both")
+
+    def create_sliders(self):
+        # The container for sliders
+        sliders_frame = ttk.Frame(self.content_frame)
+        sliders_frame.pack(side="top", fill="x", padx=10, pady=10)
+
+        # Assuming the image paths are correctly specified and images exist
+        images_info = [
+            ("Data Analysis", "./icons/data_analysis.png"),
+            ("Data Visualization", "./icons/data_visualization.png"),
+            ("Machine Learning", "./icons/settings.png"),
+        ]
+
+        for text, image_path in images_info:
+            img = Image.open(image_path).resize((50, 50), Image.ANTIALIAS)
+            photo = ImageTk.PhotoImage(img)
+            button = ttk.Button(sliders_frame, text=text, image=photo, compound="top", style="Slider.TButton")
+            button.image = photo  # Keep a reference
+            button.pack(side="left", expand=True, fill="both", padx=5)
+
+        # Style for the sliders
+        slider_style = ttk.Style()
+        slider_style.configure("Slider.TButton", background="orange", foreground="white")
 
 if __name__ == "__main__":
     app = MainWindow()
