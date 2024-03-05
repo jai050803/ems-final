@@ -314,6 +314,13 @@ class EmployeeManagementSystem:
 
         correct_formats_button = tk.Button(menu_frame2, text="Correct Wrong Formats", command=self.correct_wrong_formats, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         correct_formats_button.pack(pady=5, padx=button_padx)
+        
+        delete_column_button = tk.Button(menu_frame2, text="Delete Specific Column", command=self.delete_specific_column, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        delete_column_button.pack(pady=5, padx=button_padx)
+        
+        add_column_button = tk.Button(menu_frame2, text="Add Column with Formula", command=self.add_column_with_formula, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        add_column_button.pack(pady=5, padx=button_padx)
+
 
 
 
@@ -374,6 +381,36 @@ class EmployeeManagementSystem:
                     messagebox.showinfo("Download Successful", f"Data has been successfully downloaded to:\n{file_path}")
                 except Exception as e:
                     messagebox.showerror("Error", f"Error while saving data: {e}")
+        else:
+            messagebox.showwarning("No Data", "Please open a file first to load data.")
+
+    def delete_specific_column(self):
+        if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
+            column_name = simpledialog.askstring("Delete Column", "Enter the column name to delete:")
+            if column_name in self.current_data.columns:
+                try:
+                    self.current_data.drop(column_name, axis=1, inplace=True)
+                    self.display_in_treeview(self.current_data)
+                    messagebox.showinfo("Delete Column", f"Column '{column_name}' deleted successfully.")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error deleting column: {e}")
+            else:
+                messagebox.showwarning("Column Not Found", f"Column '{column_name}' not found.")
+        else:
+            messagebox.showwarning("No Data", "Please open a file first to load data.")
+            
+    def add_column_with_formula(self):
+        if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
+            formula = simpledialog.askstring("Add Column", "Enter the formula to calculate new column values:\nExample: col1 + col2 * col3")
+            new_column_name = simpledialog.askstring("Add Column", "Enter the name for the new column:")
+            if formula and new_column_name:
+                try:
+                    # Use DataFrame.eval() to evaluate the formula
+                    self.current_data[new_column_name] = self.current_data.eval(formula)
+                    self.display_in_treeview(self.current_data)
+                    messagebox.showinfo("Add Column", f"New column '{new_column_name}' added successfully.")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error adding new column: {e}")
         else:
             messagebox.showwarning("No Data", "Please open a file first to load data.")
 
