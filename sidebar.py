@@ -132,24 +132,43 @@ class MainWindow(tk.Tk):
         header_label.pack(pady=30)
     
     def create_main_feature_frame(self):
-        main_feature_frame = ttk.Frame(self.content_frame, height=300)  # Adjusted height
-        main_feature_frame.pack(side="top", fill="x", padx=10, pady=(10, 0))
-        main_feature_frame.pack_propagate(False)  # This prevents the frame from shrinking to fit its contents
+        
+        # Container for sliders, filling horizontally
+        sliders_frame = ttk.Frame(self.content_frame)
+        sliders_frame.pack(side="top", fill="x", padx=10, pady=10)
 
-        # Example content in main_feature_frame (can be replaced with actual content)
-        content_label = ttk.Label(main_feature_frame, text="Main Content Area", background="white")
-        content_label.pack(expand=True, fill="both")
+        features_info = [
+            ("Analytics- Analyze the data efficiently with our User Friendly Interface", "./files/images/chart1.jpeg"),
+            ("Visualization - We offer tools for you to visually represent your data Easily with simple clicks", "./files/images/chart2.jpg"),
+            ("Machine Learning - Apply machine learning algorithms to the data easliy with our User Interface", "./files/images/chart3.png"),
+        ]
 
+        for text, image_path in features_info:
+            slider_frame = ttk.Frame(sliders_frame, style="Slider.TFrame")
+            slider_frame.pack(fill="x", expand=True, padx=5, pady=5)
+
+            img = Image.open(image_path)
+            img = img.resize((100, 100), Image.Resampling.LANCZOS)  # Resize as needed
+            photo = ImageTk.PhotoImage(img)
+
+            image_label = ttk.Label(slider_frame, image=photo)
+            image_label.image = photo  # Keep a reference
+            image_label.pack(side="left", padx=(10, 20), pady=10)
+
+            text_label = ttk.Label(slider_frame, text=text,justify="left",background="#D35400", foreground='black', font=("Helvetica", 14, "bold"))
+            text_label.pack(side="left", fill="x", expand=True, padx=(0, 10), pady=10)
+
+        style = ttk.Style()
+        style.configure("Slider.TFrame", background="#D35400")  # Adjust the background color as needed
 
     def create_sliders(self):
-    # The container for sliders
         sliders_frame = ttk.Frame(self.content_frame)
         sliders_frame.pack(side="top", fill="x", padx=10, pady=10)
 
         images_info = [
-            ("Data Analysis", "./icons/analytics.png"),
-            ("Data Visualization", "./icons/visualization.png"),
-            ("Machine Learning", "./icons/settings.png"),
+            ("Data Analysis made easy using EMS", "./icons/analytics.png"),
+            ("Data Visualization - Visualize any data with simple clicks", "./icons/visualization.png"),
+            ("Machine Learning - Apply machine learning algorithms to your data", "./icons/settings.png"),
         ]
 
         for text, image_path in images_info:
@@ -162,6 +181,7 @@ class MainWindow(tk.Tk):
         # Style for the sliders
         button = tk.Button(sliders_frame, text=text, image=photo, compound="top", bg="#D35400", fg="white", font=("Arial", 10))
         button.config(height=100, width=200)
+        
 if __name__ == "__main__":
     app = MainWindow()
     app.mainloop()
