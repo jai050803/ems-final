@@ -1410,9 +1410,27 @@ class EmployeeManagementSystem:
         remove_outliers_button.pack()
 
     def remove_outliers(self, columns):
-        # Here, you would define how to remove outliers from your data based on the quartiles
-        # This function should then update the box plot and potentially the data displayed in your Treeview
-        pass
+        # Create a copy of the data to avoid modifying the original dataframe
+        filtered_data = self.data.copy()
+
+        for col in columns:
+            Q1 = filtered_data[col].quantile(0.25)
+            Q3 = filtered_data[col].quantile(0.75)
+            IQR = Q3 - Q1
+
+            # Define the criteria for an outlier
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+
+            # Filter the data to exclude outliers
+            filtered_data = filtered_data[(filtered_data[col] >= lower_bound) & (filtered_data[col] <= upper_bound)]
+
+        # Update the data displayed in the Treeview
+        # This assumes you have a method to update or refresh the Treeview with new data
+        self.update_treeview(filtered_data)
+
+        # Optionally, re-plot the box plot without outliers
+        self.plot_updated_boxplot(filtered_data, columns)
 
 
     def apply_linear_regression(self):
