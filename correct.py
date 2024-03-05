@@ -321,9 +321,6 @@ class EmployeeManagementSystem:
         add_column_button = tk.Button(menu_frame2, text="Add Column with Formula", command=self.add_column_with_formula, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         add_column_button.pack(pady=5, padx=button_padx)
 
-
-
-
         # Main Content Frame (2/3 of Main Part Frame)
         content_frame = ttk.Frame(main_frame2, style="Light.TFrame")
         content_frame.pack(fill=tk.BOTH, expand=True)
@@ -352,6 +349,7 @@ class EmployeeManagementSystem:
 
         # Display the data in the Treeview widget
         self.display_data_in_treeview(treeview, data)
+        self.treeview.bind("<Double-1>", self.on_item_double_click)
 
         # Footer Frame
         footer_frame = tk.Frame(cleaning_window, bg="#273746", height=30, bd=1, relief=tk.SOLID)
@@ -398,7 +396,46 @@ class EmployeeManagementSystem:
                 messagebox.showwarning("Column Not Found", f"Column '{column_name}' not found.")
         else:
             messagebox.showwarning("No Data", "Please open a file first to load data.")
+    
+    def on_item_double_click(self, event):
+        # Get the item clicked
+        selected_item = self.treeview.identify_row(event.y)
+        if not selected_item:
+            # In case the click didn't happen on an item
+            return
+        
+        # Get the column clicked
+        column_id = self.treeview.identify_column(event.x)
+        
+        column_index = int(column_id.strip('#')) - 1  # Convert to 0-based index
+        
+        # Get the old value from the clicked cell
+        old_value = self.treeview.item(selected_item, 'values')[column_index]
+        
+        # Create the pop-up window (your existing code, adjusted for column_index)
+        edit_window = tk.Toplevel(self.root)
+        edit_window.title(f"Edit Cell (Column: {column_index + 1})")
+        edit_window.geometry("300x100")
+        
+        new_value_entry = tk.Entry(edit_window)
+        new_value_entry.pack(pady=10)
+        new_value_entry.insert(0, old_value)
+        
+        def save_new_value(event=None):  # Allow optional event argument
+            new_value = new_value_entry.get()
+            row_index = self.treeview.index(selected_item)
+            self.current_data.iloc[row_index, column_index] = new_value  # Update DataFrame
+            current_values = list(self.treeview.item(selected_item, 'values'))
+            current_values[column_index] = new_value  # Update the specific cell in the values list
+            self.treeview.item(selected_item, values=current_values)  # Update Treeview
+            edit_window.destroy()
             
+        save_button = tk.Button(edit_window, text="Save", command=save_new_value)
+        save_button.pack(pady=10)
+        new_value_entry.bind("<Return>", save_new_value)
+
+
+
     def add_column_with_formula(self):
         if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
             formula = simpledialog.askstring("Add Column", "Enter the formula to calculate new column values:\nExample: col1 + col2 * col3")
