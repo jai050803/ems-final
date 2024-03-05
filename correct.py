@@ -99,6 +99,7 @@ class EmployeeManagementSystem:
         x_scrollbar = ttk.Scrollbar(self.treeview_frame, orient="horizontal", command=self.treeview.xview)
         x_scrollbar.pack(side="bottom", fill="x")
         self.treeview.configure(xscrollcommand=x_scrollbar.set)
+        
 
         # Footer Frame
         self.footer_frame = tk.Frame(root, bg="#273746", height=30, bd=1, relief=tk.SOLID)
@@ -241,6 +242,8 @@ class EmployeeManagementSystem:
             self.statistic_of_data()
 
     
+    def statistic_of_data(self,data):
+        pass
 
     def data_cleaning(self, data):
         cleaning_window = tk.Toplevel(self.root)
@@ -675,10 +678,6 @@ class EmployeeManagementSystem:
     def update_data_cleaning_window_data(self):
         if self.data_cleaning_window and self.cleaning_window_data is not None:
             self.display_data_in_treeview(self.treeview, self.cleaning_window_data)  # Update data in the cleaning window
-            
-
-
-
 
     def initialize_data_cleaning_window(self):
         self.data_cleaning_window = tk.Toplevel(self.root)
@@ -1099,11 +1098,6 @@ class EmployeeManagementSystem:
         ax.grid(True, linestyle=':', linewidth=0.5, color='gray', alpha=0.5)  # Add grid lines with dotted pattern
         plt.tight_layout()  # Adjust layout for better spacing
         plt.show()
-
-
-
-    def statistic_of_data(self):
-        messagebox.showinfo("Statistic of Data", "Calculating Statistics")
 
     def open_file(self, file_type):
         if file_type != "MySQL Server":
