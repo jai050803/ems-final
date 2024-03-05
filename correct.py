@@ -239,7 +239,7 @@ class EmployeeManagementSystem:
         elif operation == "DATA VISUALIZATION":
             self.data_visualization_window()
         elif operation == "STATISTIC OF DATA":
-            self.statistic_of_data()
+            self.statistic_of_data(self.current_data)
 
     
     def statistic_of_data(self,data):
@@ -292,7 +292,7 @@ class EmployeeManagementSystem:
         
         # Create buttons with the same style as the main software window buttons
 
-        correlation_button = tk.Button(menu_frame3, text="Removing Rows of Empty Cells", command=self.remove_empty_cells, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        correlation_button = tk.Button(menu_frame3, text="correlation_data", command=self.correlation, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         correlation_button.pack(pady=(10, 5), padx=button_padx)
 
         analytics_button = tk.Button(menu_frame3, text="Replace Empty Values", command=self.replace_empty_values, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
@@ -318,7 +318,76 @@ class EmployeeManagementSystem:
         
         operation9_button = tk.Button(menu_frame3, text="Add Column with Formula", command=self.add_column_with_formula, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         operation9_button.pack(pady=5, padx=button_padx)
+        
+        # Main Content Frame (2/3 of Main Part Frame)
+        content_frame = ttk.Frame(main_frame3, style="Light.TFrame")
+        content_frame.pack(fill=tk.BOTH, expand=True)
 
+        # Treeview widget for tabular and non-tabular display
+        treeview_frame = ttk.Frame(content_frame, style="Light.TFrame")
+        treeview_frame.pack(expand=True, fill=tk.BOTH)
+
+        treeview_style = ttk.Style()
+        treeview_style.configure("Treeview", font=("Arial", 10), background="#ecf0f1", fieldbackground="#ecf0f1", foreground="#17202a")
+
+        # Configure styles for Light and Dark themes
+        treeview_style.configure("Light.TFrame", background="#ecf0f1")
+        treeview_style.configure("Dark.TFrame", background="#2c3e50")
+
+        treeview = ttk.Treeview(treeview_frame, show="headings", style="Treeview")
+        treeview.pack(expand=True, fill=tk.BOTH)
+
+        y_scrollbar = ttk.Scrollbar(treeview_frame, orient="vertical", command=treeview.yview)
+        y_scrollbar.pack(side="right", fill="y")
+        treeview.configure(yscrollcommand=y_scrollbar.set)
+
+        x_scrollbar = ttk.Scrollbar(treeview_frame, orient="horizontal", command=treeview.xview)
+        x_scrollbar.pack(side="bottom", fill="x")
+        treeview.configure(xscrollcommand=x_scrollbar.set)
+
+        # Display the data in the Treeview widget
+        self.display_data_in_treeview(treeview, data)
+        self.treeview.bind("<Double-1>", self.on_item_double_click)
+
+        # Footer Frame
+        footer_frame = tk.Frame(statistics_window, bg="#273746", height=30, bd=1, relief=tk.SOLID)
+        footer_frame.pack(fill=tk.X, side=tk.BOTTOM)
+
+        # Footer Label
+        footer_label = tk.Label(footer_frame, text="© 2024 EMS - A Business Intelligence Tool", font=("Arial", 8), bg="#273746", fg="white")
+        footer_label.pack(pady=5)
+    
+    def correlation(self):
+        # Calculate the correlation matrix
+        corr_matrix = self.current_data.corr()
+
+        # Create a new Tkinter window
+        correlation_window = tk.Toplevel(self.root)
+        correlation_window.title("Correlation Matrix")
+        correlation_window.geometry("600x400")  # Adjust size as needed
+
+        # Create a Treeview widget in the new window
+        treeview = ttk.Treeview(correlation_window, show="headings", columns=list(corr_matrix.columns))
+        treeview.pack(expand=True, fill='both')
+
+        # Define the column headings
+        for col in corr_matrix.columns:
+            treeview.heading(col, text=col)
+            treeview.column(col, anchor="center")
+
+        # Adding the data rows to the Treeview
+        for row in corr_matrix.itertuples(index=True, name='Pandas'):
+            row_data = tuple([getattr(row, col) for col in corr_matrix.columns])
+            treeview.insert('', 'end', values=row_data)
+
+        # Scrollbars for the Treeview
+        scrollbar_vertical = ttk.Scrollbar(correlation_window, orient="vertical", command=treeview.yview)
+        scrollbar_vertical.pack(side='right', fill='y')
+
+        scrollbar_horizontal = ttk.Scrollbar(correlation_window, orient="horizontal", command=treeview.xview)
+        scrollbar_horizontal.pack(side='bottom', fill='x')
+
+        treeview.configure(yscrollcommand=scrollbar_vertical.set, xscrollcommand=scrollbar_horizontal.set)
 
 
     def data_cleaning(self, data):
@@ -351,9 +420,9 @@ class EmployeeManagementSystem:
         button_bg = "#273746"
         button_fg = "#ecf0f1"
         button_width = 25
-        button_height = 2
+        button_height = 1
         button_padx = 10
-        button_pady = 5
+        button_pady = 3
 
         
         # Add a frame to contain rows and columns labels
@@ -399,6 +468,10 @@ class EmployeeManagementSystem:
         
         add_column_button = tk.Button(menu_frame2, text="Add Column with Formula", command=self.add_column_with_formula, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         add_column_button.pack(pady=5, padx=button_padx)
+        
+        filter_button = tk.Button(menu_frame2, text="Show Numerical Columns", command=self.filter_numerical_columns, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        filter_button.pack(pady=5, padx=button_padx)
+
 
         # Main Content Frame (2/3 of Main Part Frame)
         content_frame = ttk.Frame(main_frame2, style="Light.TFrame")
@@ -476,6 +549,19 @@ class EmployeeManagementSystem:
         else:
             messagebox.showwarning("No Data", "Please open a file first to load data.")
     
+    def filter_numerical_columns(self):
+        # Assuming 'data' is your DataFrame
+        numerical_data = self.current_data.select_dtypes(include=['int64', 'float64'])
+        
+        # Clear the existing data in the Treeview
+        for i in self.treeview.get_children():
+            self.treeview.delete(i)
+        
+        # Assuming your Treeview widget is called 'treeview'
+        self.display_data_in_treeview(self.treeview, numerical_data)
+
+
+        
     def on_item_double_click(self, event):
         # Get the item clicked
         selected_item = self.treeview.identify_row(event.y)
