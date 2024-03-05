@@ -6,7 +6,6 @@ from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
 class SidebarIcon(ttk.Frame):
     def __init__(self, parent, image, text, command=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)

@@ -15,7 +15,7 @@ import pymysql
 from tkinter import Scrollbar
 
 class EmployeeManagementSystem:
-    def __init__(self, root):
+    def __init__(self, root=None):
         if root is None:
             root = tk.Tk()
         self.root = root
@@ -527,19 +527,6 @@ class EmployeeManagementSystem:
             for index, row in data.iterrows():
                 treeview.insert("", "end", values=list(row))
 
-    def download_data(self):
-        if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
-            file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
-
-            if file_path:
-                try:
-                    self.current_data.to_csv(file_path, index=False)
-                    messagebox.showinfo("Download Successful", f"Data has been successfully downloaded to:\n{file_path}")
-                except Exception as e:
-                    messagebox.showerror("Error", f"Error while saving data: {e}")
-        else:
-            messagebox.showwarning("No Data", "Please open a file first to load data.")
-
     def delete_specific_column(self):
         if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
             column_name = simpledialog.askstring("Delete Column", "Enter the column name to delete:")
@@ -558,15 +545,11 @@ class EmployeeManagementSystem:
     def filter_numerical_columns(self):
         # Assuming 'data' is your DataFrame
         numerical_data = self.current_data.select_dtypes(include=['int64', 'float64'])
-        
         # Clear the existing data in the Treeview
         for i in self.treeview.get_children():
             self.treeview.delete(i)
-        
-        # Assuming your Treeview widget is called 'treeview'
-        self.display_data_in_treeview(self.treeview, numerical_data)
-
-
+        self.current_data = numerical_data
+        self.display_in_treeview(self.current_data)
         
     def on_item_double_click(self, event):
         # Get the item clicked
@@ -615,8 +598,8 @@ class EmployeeManagementSystem:
                 try:
                     # Use DataFrame.eval() to evaluate the formula
                     self.current_data[new_column_name] = self.current_data.eval(formula)
-                    self.display_in_treeview(self.current_data)
                     messagebox.showinfo("Add Column", f"New column '{new_column_name}' added successfully.")
+                    self.display_in_treeview(self.current_data)
                 except Exception as e:
                     messagebox.showerror("Error", f"Error adding new column: {e}")
         else:
@@ -718,6 +701,19 @@ class EmployeeManagementSystem:
             messagebox.showwarning("No Data", "Please open a file first to load data.")
 
 
+    def download_data(self):
+        if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
+            file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+
+            if file_path:
+                try:
+                    self.current_data.to_csv(file_path, index=False)
+                    messagebox.showinfo("Download Successful", f"Data has been successfully downloaded to:\n{file_path}")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error while saving data: {e}")
+        else:
+            messagebox.showwarning("No Data", "Please open a file first to load data.")
+            
     def replace_using_mean(self):
         if self.current_data is not None and isinstance(self.current_data, pd.DataFrame):
             # Ask the user for the column name
