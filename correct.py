@@ -243,7 +243,83 @@ class EmployeeManagementSystem:
 
     
     def statistic_of_data(self,data):
-        pass
+        statistics_window = tk.Toplevel(self.root)
+        statistics_window.state('zoomed')
+        statistics_window.title("Data Cleaning - Dealing with Empty Cells and Duplicates")
+        statistics_window.configure(bg="#ecf0f1")
+        
+        # Header Frame of data_cleaning
+        header_frame3 = tk.Frame(statistics_window, bg="#273746", height=70, bd=1, relief=tk.SOLID)
+        header_frame3.pack(fill=tk.X)
+
+        header_label = tk.Label(header_frame3, text="DATA CLEANING", font=("Arial", 20, "bold"), bg="#273746", fg="white")
+        header_label.pack(pady=15)
+
+        # Main Part Frame of data_cleaning
+        main_frame3 = tk.Frame(statistics_window, bg="#ecf0f1", height=600, bd=1, relief=tk.SOLID)
+        main_frame3.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        # Skyblue Left Frame of data_cleaning
+        menu_frame3 = tk.Frame(main_frame3, bg="darkgrey", width=250, bd=1, relief=tk.SOLID)
+        menu_frame3.pack(fill=tk.Y, side=tk.LEFT)
+        
+        # Heading for File Upload
+        file_heading = tk.Label(menu_frame3, text="Functions", font=("Arial", 16, "bold"), bg="darkgrey", fg="white")
+        file_heading.pack(pady=10)
+        
+         # Define common button style parameters
+        button_bg = "#273746"
+        button_fg = "#ecf0f1"
+        button_width = 25
+        button_height = 2
+        button_padx = 10
+        button_pady = 5
+        
+        # Add a frame to contain rows and columns labels
+        status_frame = tk.Frame(statistics_window, bg="#ecf0f1")
+        status_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Add labels for total number of rows and columns
+        rows_label = tk.Label(status_frame, text="Rows: {}".format(data.shape[0]), font=("Arial", 10), bg="#ecf0f1", fg="#273746")
+        rows_label.pack(side=tk.LEFT, padx=10)
+
+        columns_label = tk.Label(status_frame, text="Columns: {}".format(data.shape[1]), font=("Arial", 10), bg="#ecf0f1", fg="#273746")
+        columns_label.pack(side=tk.LEFT, padx=10)
+        
+        # Download Button
+        download_button = tk.Button(status_frame, text="Download Data", command=self.download_data, bg="#273746", fg="#ecf0f1", width=15, bd=1, relief=tk.RAISED)
+        download_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        
+        # Create buttons with the same style as the main software window buttons
+
+        correlation_button = tk.Button(menu_frame3, text="Removing Rows of Empty Cells", command=self.remove_empty_cells, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        correlation_button.pack(pady=(10, 5), padx=button_padx)
+
+        analytics_button = tk.Button(menu_frame3, text="Replace Empty Values", command=self.replace_empty_values, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        analytics_button.pack(pady=5, padx=button_padx)
+
+        operation3_button = tk.Button(menu_frame3, text="Replace Empty Cells Using Mean", command=self.replace_using_mean, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation3_button.pack(pady=5, padx=button_padx)
+
+        operation4_button = tk.Button(menu_frame3, text="Replace Empty Cells Using Median", command=self.replace_using_median, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation4_button.pack(pady=5, padx=button_padx)
+
+        operation5_button = tk.Button(menu_frame3, text="Replace Empty Cells Using Mode", command=self.replace_using_mode, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation5_button.pack(pady=5, padx=button_padx)
+
+        operation6_button = tk.Button(menu_frame3, text="Remove Duplicates", command=self.remove_duplicates, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation6_button.pack(pady=5, padx=button_padx)
+
+        operation7_button = tk.Button(menu_frame3, text="Correct Wrong Formats", command=self.correct_wrong_formats, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation7_button.pack(pady=5, padx=button_padx)
+        
+        operation8_button = tk.Button(menu_frame3, text="Delete Specific Column", command=self.delete_specific_column, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation8_button.pack(pady=5, padx=button_padx)
+        
+        operation9_button = tk.Button(menu_frame3, text="Add Column with Formula", command=self.add_column_with_formula, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
+        operation9_button.pack(pady=5, padx=button_padx)
+
+
 
     def data_cleaning(self, data):
         cleaning_window = tk.Toplevel(self.root)
@@ -256,7 +332,7 @@ class EmployeeManagementSystem:
         header_frame2 = tk.Frame(cleaning_window, bg="#273746", height=70, bd=1, relief=tk.SOLID)
         header_frame2.pack(fill=tk.X)
 
-        header_label = tk.Label(header_frame2, text="DATA_CLEANING", font=("Arial", 20, "bold"), bg="#273746", fg="white")
+        header_label = tk.Label(header_frame2, text="DATA CLEANING", font=("Arial", 20, "bold"), bg="#273746", fg="white")
         header_label.pack(pady=15)
 
         # Main Part Frame of data_cleaning
