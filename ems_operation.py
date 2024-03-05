@@ -8,11 +8,24 @@ from docx import Document
 from scipy.stats import mode as scipy_mode
 from pandasgui import show
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
 import textwrap
 import numpy as np
 import pymysql
 from tkinter import Scrollbar
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+import pickle
+
 
 class EmployeeManagementSystem:
     def __init__(self, root=None):
@@ -1338,6 +1351,10 @@ class EmployeeManagementSystem:
         button1 = tk.Button(machine_learning_buttons, text="Function 1", command=self.function1, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         button1.pack(pady=5)
 
+        # Add button for linear regression
+        linear_regression_button = tk.Button(menu_frame_forecast, text="Apply Linear Regression", command=self.apply_linear_regression, bg="#273746", fg="#ecf0f1", width=25, height=2)
+        linear_regression_button.pack(pady=5)
+
         button2 = tk.Button(machine_learning_buttons, text="Standardization", command=lambda: self.scale_data(data, columns=self.treeview["columns"], method='standardization'), bg=button_bg, fg=button_fg, width=button_width, height=button_height)
         button2.pack(pady=5)
 
@@ -1357,19 +1374,88 @@ class EmployeeManagementSystem:
 
 
     def function1(self):
-        # Implement functionality for Function 1 here
+        # Ask the user for the number of columns they want to plot
+        num_columns = simpledialog.askinteger("Input", "How many columns do you want to plot?", parent=self.root)
+        if not num_columns or num_columns <= 0:
+            return
+
+        # Ask for the names of the columns
+        columns = []
+        for i in range(num_columns):
+            column_name = simpledialog.askstring("Input", f"Enter the name of column {i+1}:", parent=self.root)
+            if column_name in self.data.columns:
+                columns.append(column_name)
+            else:
+                tk.messagebox.showerror("Error", f"Column {column_name} does not exist in the data.")
+                return
+
+        # Plot the box plot for the selected columns
+        fig, ax = plt.subplots()
+        self.data[columns].boxplot(ax=ax)
+        ax.set_title('Box plot')
+
+        # Show quartiles
+        for col in columns:
+            quartiles = self.data[col].quantile([0.25, 0.5, 0.75]).to_dict()
+            print(f"Column: {col}, Quartiles: {quartiles}")  # You may want to display this in the GUI
+
+        # Embed the plot into the tkinter window
+        canvas = FigureCanvasTkAgg(fig, master=self.root)  # `self.root` is your main tkinter window
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack()
+        canvas.draw()
+
+        # Button to remove outliers - this needs a defined method to actually remove outliers
+        remove_outliers_button = tk.Button(self.root, text="Remove Outliers", command=lambda: self.remove_outliers(columns))
+        remove_outliers_button.pack()
+
+    def remove_outliers(self, columns):
+        # Here, you would define how to remove outliers from your data based on the quartiles
+        # This function should then update the box plot and potentially the data displayed in your Treeview
         pass
 
-    def scale_data(self, data, columns, method='standardization'):
-        # Convert columns tuple to a list
-        columns_list = list(columns)
-        
-        # Remove 'Row No.' column if present
-        if 'Row No.' in columns_list:
-            columns_list.remove('Row No.')
 
-        # Convert columns list back to a tuple
-        columns = tuple(columns_list)
+    def apply_linear_regression(self):
+        if self.current_data is None:
+            messagebox.showerror("Error", "No data available for linear regression.")
+            return
+
+        # Prompt user to select independent and dependent variables
+        independent_variable = simpledialog.askstring("Select Variable", "Enter name of independent variable:")
+        dependent_variable = simpledialog.askstring("Select Variable", "Enter name of dependent variable:")
+
+        if independent_variable is None or dependent_variable is None:
+            messagebox.showerror("Error", "Please specify both independent and dependent variables.")
+            return
+
+        # Check if variables exist in the current data
+        if independent_variable not in self.current_data.columns or dependent_variable not in self.current_data.columns:
+            messagebox.showerror("Error", "Selected variables not found in data.")
+            return
+
+        # Extract selected variables from data
+        X = self.current_data[[independent_variable]]
+        y = self.current_data[dependent_variable]
+
+        # Perform linear regression
+        model = LinearRegression()
+        model.fit(X, y)
+
+        # Display regression coefficients
+        messagebox.showinfo("Linear Regression Results", f"Regression Coefficients:\nIntercept: {model.intercept_}\nSlope: {model.coef_[0]}")
+
+    def scale_data(self, data, columns, method='standardization'):
+        # Extract the column names from the Treeview widget
+        treeview_columns = self.treeview["columns"]
+
+        # Print out the column names from the Treeview widget and columns in the DataFrame
+        print("Columns from Treeview:", treeview_columns)
+        print("Columns in DataFrame:", data.columns)
+
+        # Check if the columns from the Treeview widget match the columns in the DataFrame
+        if set(treeview_columns) != set(data.columns):
+            print("Column names from Treeview do not match columns in DataFrame")
+            return
 
         # Extract the selected columns from the data
         selected_data = data[columns]
@@ -1386,7 +1472,8 @@ class EmployeeManagementSystem:
 
         # Display the updated data in the Treeview widget
         self.display_in_treeview(data)
-
+        
+        
     def open_file(self, file_type):
         if file_type != "MySQL Server":
             file_extension = file_type.lower()
