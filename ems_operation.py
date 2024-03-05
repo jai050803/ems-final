@@ -1431,6 +1431,35 @@ class EmployeeManagementSystem:
 
         # Optionally, re-plot the box plot without outliers
         self.plot_updated_boxplot(filtered_data, columns)
+    
+    def update_treeview(self, data):
+        # Assuming your Treeview widget is accessible via self.treeview
+        # First, clear the existing rows in the Treeview
+        for row in self.treeview.get_children():
+            self.treeview.delete(row)
+
+        # Then, insert the new rows from the filtered data
+        for index, row in data.iterrows():
+            self.treeview.insert("", tk.END, values=tuple(row))
+
+    def plot_updated_boxplot(self, data, columns):
+        # This method re-plots the box plot using the filtered data
+        # Close any existing figures to avoid memory leaks
+        plt.close('all')
+
+        fig, ax = plt.subplots()
+        data[columns].boxplot(ax=ax)
+        ax.set_title('Box plot without outliers')
+
+        # Embed the plot into the tkinter window again
+        # Ensure you replace the existing plot widget or clear it before redrawing
+        canvas = FigureCanvasTkAgg(fig, master=self.root)  # `self.root` is your main tkinter window
+        canvas.draw()
+
+        # Replace the old canvas widget with the new one
+        # This step depends on how you've structured your GUI code
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack()
 
 
     def apply_linear_regression(self):
