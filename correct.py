@@ -135,7 +135,6 @@ class EmployeeManagementSystem:
 
 
     def update_main_window_data(self):
-        # Update the main window with the updated data
         self.display_in_treeview(self.current_data)
 
     def dashboard(self):

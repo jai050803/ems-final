@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import Image, ImageTk, ImageDraw
-from correct import EmployeeManagementSystem
+from ems_operation import EmployeeManagementSystem
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
