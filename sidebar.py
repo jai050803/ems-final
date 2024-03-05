@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, simpledialog
+from tkinter import ttk, filedialog
 from PIL import Image, ImageTk, ImageDraw
 from correct import EmployeeManagementSystem
 from PIL import Image, ImageTk
@@ -132,44 +132,13 @@ class MainWindow(tk.Tk):
         header_label.pack(pady=30)
     
     def create_main_feature_frame(self):
-        main_feature_frame = ttk.Frame(self.content_frame, height=300)
+        main_feature_frame = ttk.Frame(self.content_frame, height=300)  # Adjusted height
         main_feature_frame.pack(side="top", fill="x", padx=10, pady=(10, 0))
-        main_feature_frame.pack_propagate(False)
+        main_feature_frame.pack_propagate(False)  # This prevents the frame from shrinking to fit its contents
 
-        # Task List Frame
-        self.task_frame = ttk.Frame(main_feature_frame)
-        self.task_frame.pack(side="left", fill="both", expand=True)
-
-        self.task_label = ttk.Label(self.task_frame, text="Tasks")
-        self.task_label.pack()
-
-        self.task_listbox = tk.Listbox(self.task_frame)
-        self.task_listbox.pack(expand=True, fill="both")
-
-        self.add_task_button = ttk.Button(self.task_frame, text="Add Task", command=self.add_task)
-        self.add_task_button.pack()
-
-        # Chart Frame
-        self.chart_frame = ttk.Frame(main_feature_frame)
-        self.chart_frame.pack(side="right", fill="both", expand=True)
-
-        self.figure, self.ax = plt.subplots(figsize=(3, 2), dpi=100)
-        self.chart = FigureCanvasTkAgg(self.figure, self.chart_frame)
-        self.chart.get_tk_widget().pack(fill="both", expand=True)
-
-        self.update_chart(0)
-
-    def add_task(self):
-        task = simpledialog.askstring("Task", "Describe the task:")
-        if task:
-            self.task_listbox.insert(tk.END, task)
-            self.task_listbox.itemconfig(tk.END, {'bg':'lightgray'})
-
-    def update_chart(self, progress):
-        self.ax.clear()
-        self.ax.barh(["Task Progress"], [progress], color='skyblue')
-        self.ax.set_xlim(0, 100)
-        self.chart.draw()
+        # Example content in main_feature_frame (can be replaced with actual content)
+        content_label = ttk.Label(main_feature_frame, text="Main Content Area", background="white")
+        content_label.pack(expand=True, fill="both")
 
 
     def create_sliders(self):
