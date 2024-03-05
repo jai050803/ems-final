@@ -1108,9 +1108,6 @@ class EmployeeManagementSystem:
         entry1.bind("<Return>", fill_measured_column)
         entry2.bind("<Return>", fill_dimension_column)
 
-
-
-        
         # List of all possible graphs and plots
         graph_options = ["Bar Plot", "Histogram", "Scatter Plot", "Box Plot", "Pie Chart", "Line Plot", "Area Plot", "Violin Plot"]
 
@@ -1149,8 +1146,6 @@ class EmployeeManagementSystem:
         # Button to generate the graph
         generate_button = tk.Button(right_frame, text="Generate Graph", font=("Arial", 12, "bold"), command=update_graph_and_description, bd=2, relief=tk.SOLID)
         generate_button.pack(pady=10, padx=10, fill=tk.X, anchor=tk.E) 
-
-
 
         # Footer Frame
         footer_frame = tk.Frame(visualization_window, bg="#273746", height=30, bd=1, relief=tk.SOLID)
@@ -1391,11 +1386,6 @@ class EmployeeManagementSystem:
 
         # Display the updated data in the Treeview widget
         self.display_in_treeview(data)
-
-
-
-
-
 
     def open_file(self, file_type):
         if file_type != "MySQL Server":
