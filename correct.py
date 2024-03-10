@@ -1381,7 +1381,7 @@ class EmployeeManagementSystem:
             columns_label.pack(side=tk.LEFT, padx=10)
 
 
-
+ 
 if __name__ == "__main__":
     app = EmployeeManagementSystem()
     app.root.mainloop()
