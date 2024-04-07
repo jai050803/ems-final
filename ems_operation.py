@@ -8,7 +8,6 @@ from docx import Document
 from scipy.stats import mode as scipy_mode
 from pandasgui import show
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
 import textwrap
 import numpy as np
@@ -16,16 +15,13 @@ import pymysql
 from tkinter import Scrollbar
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-import pickle
-
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+# from sklearn.preprocessing import MinMaxScaler
 
 class EmployeeManagementSystem:
     def __init__(self, root=None):
@@ -1347,19 +1343,26 @@ class EmployeeManagementSystem:
         machine_learning_buttons = tk.Frame(menu_frame_forecast, bg="#ecf0f1")
         machine_learning_buttons.pack(fill=tk.X, padx=10, pady=10)
 
-        # Create buttons for machine learning functions
-        button1 = tk.Button(machine_learning_buttons, text="Function 1", command=self.function1, bg=button_bg, fg=button_fg, width=button_width, height=button_height)
-        button1.pack(pady=5)
-
         # Add button for linear regression
         linear_regression_button = tk.Button(menu_frame_forecast, text="Apply Linear Regression", command=self.apply_linear_regression, bg="#273746", fg="#ecf0f1", width=25, height=2)
         linear_regression_button.pack(pady=5)
 
-        button2 = tk.Button(machine_learning_buttons, text="Standardization", command=lambda: self.scale_data(data, columns=self.treeview["columns"], method='standardization'), bg=button_bg, fg=button_fg, width=button_width, height=button_height)
-        button2.pack(pady=5)
+        # Add button for Multiple regression
+        Multiple_regression_button = tk.Button(menu_frame_forecast, text="Apply Multiple Regression", command=self.apply_multiple_regression, bg="#273746", fg="#ecf0f1", width=25, height=2)
+        Multiple_regression_button.pack(pady=5)
 
-        button3 = tk.Button(machine_learning_buttons, text="Min-Max Scaling", command=lambda: self.scale_data(data, columns=self.treeview["columns"], method='min-max'), bg=button_bg, fg=button_fg, width=button_width, height=button_height)
-        button3.pack(pady=5)
+        # Add button for Polynomial regression
+        Polynomial_regression_button = tk.Button(menu_frame_forecast, text="Apply Polynomial Regression", command=self.apply_polynomial_regression, bg="#273746", fg="#ecf0f1", width=25, height=2)
+        Polynomial_regression_button.pack(pady=5)
+
+        # Add button for Scalling
+        Scalling_button = tk.Button(menu_frame_forecast, text="Apply Scale", command=lambda: self.update_forecast_window(data), bg="#273746", fg="#ecf0f1", width=25, height=2)
+        Scalling_button.pack(pady=5)
+
+        # Add button for Decision Tree regression
+        decision_tree_button = tk.Button(menu_frame_forecast, text="Apply Decision Tree", command=self.apply_decision_tree, bg="#273746", fg="#ecf0f1", width=25, height=2)
+        decision_tree_button.pack(pady=5)
+
 
         # Footer Frame
         footer_frame_forecast = tk.Frame(forecast_window, bg="#273746", height=30, bd=1, relief=tk.SOLID)
@@ -1372,154 +1375,273 @@ class EmployeeManagementSystem:
         # Ensure the window remains open
         forecast_window.mainloop()
 
-
-    def function1(self):
-        # Ask the user for the number of columns they want to plot
-        num_columns = simpledialog.askinteger("Input", "How many columns do you want to plot?", parent=self.root)
-        if not num_columns or num_columns <= 0:
-            return
-
-        # Ask for the names of the columns
-        columns = []
-        for i in range(num_columns):
-            column_name = simpledialog.askstring("Input", f"Enter the name of column {i+1}:", parent=self.root)
-            if column_name in self.data.columns:
-                columns.append(column_name)
-            else:
-                tk.messagebox.showerror("Error", f"Column {column_name} does not exist in the data.")
-                return
-
-        # Plot the box plot for the selected columns
-        fig, ax = plt.subplots()
-        self.data[columns].boxplot(ax=ax)
-        ax.set_title('Box plot')
-
-        # Show quartiles
-        for col in columns:
-            quartiles = self.data[col].quantile([0.25, 0.5, 0.75]).to_dict()
-            print(f"Column: {col}, Quartiles: {quartiles}")  # You may want to display this in the GUI
-
-        # Embed the plot into the tkinter window
-        canvas = FigureCanvasTkAgg(fig, master=self.root)  # `self.root` is your main tkinter window
-        canvas_widget = canvas.get_tk_widget()
-        canvas_widget.pack()
-        canvas.draw()
-
-        # Button to remove outliers - this needs a defined method to actually remove outliers
-        remove_outliers_button = tk.Button(self.root, text="Remove Outliers", command=lambda: self.remove_outliers(columns))
-        remove_outliers_button.pack()
-
-    def remove_outliers(self, columns):
-        # Create a copy of the data to avoid modifying the original dataframe
-        filtered_data = self.data.copy()
-
-        for col in columns:
-            Q1 = filtered_data[col].quantile(0.25)
-            Q3 = filtered_data[col].quantile(0.75)
-            IQR = Q3 - Q1
-
-            # Define the criteria for an outlier
-            lower_bound = Q1 - 1.5 * IQR
-            upper_bound = Q3 + 1.5 * IQR
-
-            # Filter the data to exclude outliers
-            filtered_data = filtered_data[(filtered_data[col] >= lower_bound) & (filtered_data[col] <= upper_bound)]
-
-        # Update the data displayed in the Treeview
-        # This assumes you have a method to update or refresh the Treeview with new data
-        self.update_treeview(filtered_data)
-
-        # Optionally, re-plot the box plot without outliers
-        self.plot_updated_boxplot(filtered_data, columns)
-    
-    def update_treeview(self, data):
-        # Assuming your Treeview widget is accessible via self.treeview
-        # First, clear the existing rows in the Treeview
-        for row in self.treeview.get_children():
-            self.treeview.delete(row)
-
-        # Then, insert the new rows from the filtered data
-        for index, row in data.iterrows():
-            self.treeview.insert("", tk.END, values=tuple(row))
-
-    def plot_updated_boxplot(self, data, columns):
-        # This method re-plots the box plot using the filtered data
-        # Close any existing figures to avoid memory leaks
-        plt.close('all')
-
-        fig, ax = plt.subplots()
-        data[columns].boxplot(ax=ax)
-        ax.set_title('Box plot without outliers')
-
-        # Embed the plot into the tkinter window again
-        # Ensure you replace the existing plot widget or clear it before redrawing
-        canvas = FigureCanvasTkAgg(fig, master=self.root)  # `self.root` is your main tkinter window
-        canvas.draw()
-
-        # Replace the old canvas widget with the new one
-        # This step depends on how you've structured your GUI code
-        canvas_widget = canvas.get_tk_widget()
-        canvas_widget.pack()
-
-
     def apply_linear_regression(self):
+        # Check if data is available
         if self.current_data is None:
             messagebox.showerror("Error", "No data available for linear regression.")
             return
 
-        # Prompt user to select independent and dependent variables
-        independent_variable = simpledialog.askstring("Select Variable", "Enter name of independent variable:")
-        dependent_variable = simpledialog.askstring("Select Variable", "Enter name of dependent variable:")
-
-        if independent_variable is None or dependent_variable is None:
-            messagebox.showerror("Error", "Please specify both independent and dependent variables.")
+        # Get the target variable from the user
+        target_variable = simpledialog.askstring("Select Variable", "Enter name of the target variable:")
+        if target_variable is None:
+            messagebox.showerror("Error", "Please specify the target variable.")
             return
 
-        # Check if variables exist in the current data
-        if independent_variable not in self.current_data.columns or dependent_variable not in self.current_data.columns:
-            messagebox.showerror("Error", "Selected variables not found in data.")
+        # Check if the target variable exists in the DataFrame
+        if target_variable not in self.current_data.columns:
+            messagebox.showerror("Error", "Selected target variable not found in data.")
             return
 
-        # Extract selected variables from data
-        X = self.current_data[[independent_variable]]
-        y = self.current_data[dependent_variable]
+        # Get the independent variable (only one column)
+        independent_variable = simpledialog.askstring("Select Variable", "Enter name of the independent variable:")
+        if independent_variable is None:
+            messagebox.showerror("Error", "Please specify the independent variable.")
+            return
 
-        # Perform linear regression
+        # Check if the independent variable exists in the DataFrame
+        if independent_variable not in self.current_data.columns:
+            messagebox.showerror("Error", "Selected independent variable not found in data.")
+            return
+
+        # Convert categorical columns to numerical values
+        data = self.current_data.copy()  # Create a copy to avoid modifying the original data
+        categorical_cols = data.select_dtypes(include=['object']).columns
+        label_encoders = {}
+        for col in categorical_cols:
+            label_encoders[col] = LabelEncoder()
+            data[col] = label_encoders[col].fit_transform(data[col])
+
+        # Prepare the independent and dependent variables
+        X = data[[independent_variable]]
+        y = data[target_variable]
+
+        # Perform simple linear regression
         model = LinearRegression()
         model.fit(X, y)
 
-        # Display regression coefficients
-        messagebox.showinfo("Linear Regression Results", f"Regression Coefficients:\nIntercept: {model.intercept_}\nSlope: {model.coef_[0]}")
+        # Make predictions
+        y_pred = model.predict(X)
 
-    def scale_data(self, data, columns, method='standardization'):
-        # Extract the column names from the Treeview widget
-        treeview_columns = self.treeview["columns"]
+        # Display regression coefficients and R-squared score
+        intercept = model.intercept_
+        coefficient = model.coef_[0]  # Extract the coefficient since there's only one independent variable
+        r_squared = r2_score(y, y_pred)
+        messagebox.showinfo("Linear Regression Results",
+                            f"Intercept: {intercept}\nCoefficient: {coefficient}\nR-squared: {r_squared}")
 
-        # Print out the column names from the Treeview widget and columns in the DataFrame
-        print("Columns from Treeview:", treeview_columns)
-        print("Columns in DataFrame:", data.columns)
+        # Plot actual vs. predicted values
+        plt.figure(figsize=(8, 6))
+        plt.scatter(X, y, color='blue', label='Actual')
+        plt.plot(X, y_pred, color='red', label='Predicted')
+        plt.xlabel(independent_variable)
+        plt.ylabel(target_variable)
+        plt.title('Actual vs. Predicted Values (Linear Regression)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
-        # Check if the columns from the Treeview widget match the columns in the DataFrame
-        if set(treeview_columns) != set(data.columns):
-            print("Column names from Treeview do not match columns in DataFrame")
+        # Optionally, you can return the model if you want to use it for predictions later
+        return model
+
+    
+    def apply_multiple_regression(self):
+        # Check if data is available
+        if self.current_data is None:
+            messagebox.showerror("Error", "No data available for multiple regression.")
             return
 
-        # Extract the selected columns from the data
-        selected_data = data[columns]
+        # Get the target variable from the user
+        target_variable = simpledialog.askstring("Select Variable", "Enter name of the target variable:")
+        if target_variable is None:
+            messagebox.showerror("Error", "Please specify the target variable.")
+            return
 
-        if method == 'standardization':
-            # Perform standardization
-            scaled_data = (selected_data - selected_data.mean()) / selected_data.std()
-        elif method == 'min-max':
-            # Perform min-max scaling
-            scaled_data = (selected_data - selected_data.min()) / (selected_data.max() - selected_data.min())
+        # Check if the target variable exists in the DataFrame
+        if target_variable not in self.current_data.columns:
+            messagebox.showerror("Error", "Selected target variable not found in data.")
+            return
 
-        # Update the selected columns in the original data with the scaled values
-        data[columns] = scaled_data
+        # Get the independent variables (all columns except the target variable)
+        independent_variables = [col for col in self.current_data.columns if col != target_variable]
+
+        # Convert categorical columns to numerical values
+        data = self.current_data.copy()  # Create a copy to avoid modifying the original data
+        categorical_cols = data.select_dtypes(include=['object']).columns
+        label_encoders = {}
+        for col in categorical_cols:
+            label_encoders[col] = LabelEncoder()
+            data[col] = label_encoders[col].fit_transform(data[col])
+
+        # Prepare the independent and dependent variables
+        X = data[independent_variables]
+        y = data[target_variable]
+
+        # Perform multiple linear regression
+        model = LinearRegression()
+        model.fit(X, y)
+
+        # Make predictions
+        y_pred = model.predict(X)
+
+        # Display regression coefficients and R-squared score
+        intercept = model.intercept_
+        coefficients = model.coef_
+        r_squared = r2_score(y, y_pred)
+        messagebox.showinfo("Multiple Regression Results",
+                            f"Intercept: {intercept}\nCoefficients: {coefficients}\nR-squared: {r_squared}")
+
+        # Plot actual vs. predicted values
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y, y_pred, color='blue', label='Actual vs. Predicted')
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2, label='Perfect Prediction')
+        plt.xlabel('Actual')
+        plt.ylabel('Predicted')
+        plt.title('Actual vs. Predicted Values (Multiple Regression)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        # Optionally, you can return the model if you want to use it for predictions later
+        return model
+    
+    def apply_polynomial_regression(self, degree=2):
+        # Check if data is available
+        if self.current_data is None:
+            messagebox.showerror("Error", "No data available for polynomial regression.")
+            return
+
+        # Get the target variable from the user
+        target_variable = simpledialog.askstring("Select Variable", "Enter name of the target variable:")
+        if target_variable is None:
+            messagebox.showerror("Error", "Please specify the target variable.")
+            return
+
+        # Check if the target variable exists in the DataFrame
+        if target_variable not in self.current_data.columns:
+            messagebox.showerror("Error", "Selected target variable not found in data.")
+            return
+
+        # Get the independent variables (all columns except the target variable)
+        independent_variables = [col for col in self.current_data.columns if col != target_variable]
+
+        # Convert categorical columns to numerical values
+        data = self.current_data.copy()  # Create a copy to avoid modifying the original data
+        categorical_cols = data.select_dtypes(include=['object']).columns
+        label_encoders = {}
+        for col in categorical_cols:
+            label_encoders[col] = LabelEncoder()
+            data[col] = label_encoders[col].fit_transform(data[col])
+
+        # Prepare the independent and dependent variables
+        X = data[independent_variables]
+        y = data[target_variable]
+
+        # Perform polynomial regression
+        model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
+        model.fit(X, y)
+
+        # Make predictions
+        y_pred = model.predict(X)
+
+        # Display R-squared score
+        r_squared = r2_score(y, y_pred)
+        messagebox.showinfo("Polynomial Regression Results", f"Degree: {degree}\nR-squared: {r_squared}")
+
+        # Plot actual vs. predicted values
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y, y_pred, color='blue', label='Actual vs. Predicted')
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2, label='Perfect Prediction')
+        plt.xlabel('Actual')
+        plt.ylabel('Predicted')
+        plt.title('Actual vs. Predicted Values (Polynomial Regression)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        # Optionally, you can return the model if you want to use it for predictions later
+        return model
+
+
+    def update_forecast_window(self, data):
+        scaled_data = self.scale_data(data)
+        self.data_forecast_window(scaled_data)
+
+
+    def scale_data(self, data):
+        """
+        Scale the data using StandardScaler.
+
+        Parameters:
+        - data: DataFrame, the data to be scaled
+
+        Returns:
+        - scaled_data: DataFrame, the scaled data
+        """
+        # Convert categorical columns to numerical values
+        data_copy = data.copy()  # Create a copy to avoid modifying the original data
+        categorical_cols = data_copy.select_dtypes(include=['object']).columns
+        label_encoders = {}
+        for col in categorical_cols:
+            label_encoders[col] = LabelEncoder()
+            data_copy[col] = label_encoders[col].fit_transform(data_copy[col])
+
+        # Scale the numerical columns
+        numerical_cols = data_copy.select_dtypes(include=['float64', 'int64']).columns
+        scaler = StandardScaler()
+        data_copy[numerical_cols] = scaler.fit_transform(data_copy[numerical_cols])
 
         # Display the updated data in the Treeview widget
-        self.display_in_treeview(data)
-        
+        self.display_in_treeview(data_copy)
+
+        return data_copy
+
+
+    def apply_decision_tree(self):
+        # Check if data is available
+        if self.current_data is None:
+            messagebox.showerror("Error", "No data available for decision tree.")
+            return
+
+        # Get the target variable from the user
+        target_variable = simpledialog.askstring("Select Variable", "Enter name of the target variable:")
+        if target_variable is None:
+            messagebox.showerror("Error", "Please specify the target variable.")
+            return
+
+        # Check if the target variable exists in the DataFrame
+        if target_variable not in self.current_data.columns:
+            messagebox.showerror("Error", "Selected target variable not found in data.")
+            return
+
+        # Convert categorical columns to numerical values
+        data = self.current_data.copy()  # Create a copy to avoid modifying the original data
+        categorical_cols = data.select_dtypes(include=['object']).columns
+        label_encoders = {}
+        for col in categorical_cols:
+            label_encoders[col] = LabelEncoder()
+            data[col] = label_encoders[col].fit_transform(data[col])
+
+        # Prepare the independent and dependent variables
+        X = data.drop(columns=[target_variable])
+        y = data[target_variable]
+
+        # Perform Decision Tree regression
+        model = DecisionTreeRegressor()
+        model.fit(X, y)
+
+        # Make predictions
+        y_pred = model.predict(X)
+
+        # Display R-squared score
+        r_squared = r2_score(y, y_pred)
+        messagebox.showinfo("Decision Tree Regression Results", f"R-squared: {r_squared}")
+
+        # Plot Decision Tree
+        plt.figure(figsize=(12, 8), dpi=130)
+        plot_tree(model, filled=True, feature_names=X.columns)
+        plt.title("Decision Tree Plot")
+        plt.show()
+    
         
     def open_file(self, file_type):
         if file_type != "MySQL Server":
