@@ -7,7 +7,7 @@ import openpyxl
 from docx import Document
 from scipy.stats import mode as scipy_mode
 from pandasgui import show
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import seaborn as sns
 import textwrap
 import numpy as np
@@ -61,7 +61,7 @@ class EmployeeManagementSystem:
         self.bottom_frame.pack(fill=tk.X)
 
         # Buttons for Data Operations
-        data_operations = ["DATA CLEANING", "DATA INFORMATION", "DATA VISUALIZATION","STATISTICS OF DATA", "FORECAST"]
+        data_operations = ["DATA CLEANING", "DATA INFORMATION", "DATA VISUALIZATION", "FORECAST"]
         for operation in data_operations:
             if operation == "DATA INFORMATION":
                 operation_button = tk.Button(self.bottom_frame, text=operation, command=self.show_data_info, bg="#273746", fg="#ecf0f1", width=17, bd=1, relief=tk.RAISED)
